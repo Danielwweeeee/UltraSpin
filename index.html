@@ -955,7 +955,7 @@
           
 
 <!-- ===== SYSTEM PAGE ===== -->
-<div id="page-system" class="page">
+</div> </div><div id="page-system" class="page">
     <div style="text-align:center;">
         <div class="round-indicator" id="round-title">當前階段：選手登記</div>
     </div>
@@ -1086,31 +1086,42 @@
         renderMatches();
     }
 
-    function calculatePairings(tempPlayers) {
-        let pairs = []; let pairedIds = new Set();
-        for (let i = 0; i < tempPlayers.length; i++) {
-            if (pairedIds.has(tempPlayers[i].id)) continue;
-            let p1 = tempPlayers[i]; let found = false;
+   function calculatePairings(tempPlayers) {
+    let pairs = []; 
+    let pairedIds = new Set();
+    
+    for (let i = 0; i < tempPlayers.length; i++) {
+        if (pairedIds.has(tempPlayers[i].id)) continue;
+        let p1 = tempPlayers[i]; 
+        let found = false;
+        
+        // Match strictly with someone who shares a similar score AND has no match history
+        for (let j = i + 1; j < tempPlayers.length; j++) {
+            let p2 = tempPlayers[j];
+            if (!pairedIds.has(p2.id) && !p1.history.includes(p2.id)) {
+                pairs.push({ p1, p2, winner: null });
+                pairedIds.add(p1.id); 
+                pairedIds.add(p2.id); 
+                found = true; 
+                break;
+            }
+        }
+        
+        // Fallback: If no historic mismatch is available, pair with the next available player
+        if (!found) {
             for (let j = i + 1; j < tempPlayers.length; j++) {
                 let p2 = tempPlayers[j];
-                if (!pairedIds.has(p2.id) && !p1.history.includes(p2.id)) {
+                if (!pairedIds.has(p2.id)) { // Added security check to make sure p2 isn't already paired
                     pairs.push({ p1, p2, winner: null });
-                    pairedIds.add(p1.id); pairedIds.add(p2.id); found = true; break;
-                }
-            }
-            if (!found) {
-                for (let j = i + 1; j < tempPlayers.length; j++) {
-                    let p2 = tempPlayers[j];
-                    if (!pairedIds.has(p2.id)) {
-                        pairs.push({ p1, p2, winner: null });
-                        pairedIds.add(p1.id); pairedIds.add(p2.id); break;
-                    }
+                    pairedIds.add(p1.id); 
+                    pairedIds.add(p2.id); 
+                    break;
                 }
             }
         }
-        return pairs;
     }
-
+    return pairs;
+}
     function renderMatches() {
         const zone = document.getElementById('match-zone');
         zone.innerHTML = '';
