@@ -3,711 +3,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>賽事控制台看板 — 傳統樹狀賽制系統</title>
+    <title>BEYBLADE X 官方賽制控制台看板</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #060b12;
-            --bg-surface: #0c1521;
-            --bg-card: #111e2f;
+            --bg-deep: #050811;
+            --bg-surface: #0b1121;
+            --bg-card: #101932;
             --cyan: #00d2ff;
-            --cyan-glow: rgba(0,210,255,0.12);
-            --orange: #ff6b1a;
-            --orange-glow: rgba(255,107,26,0.12);
+            --cyan-glow: rgba(0, 210, 255, 0.2);
+            --orange: #ff5500;
+            --orange-glow: rgba(255, 85, 0, 0.2);
             --gold: #e8b840;
-            --gold-glow: rgba(232,184,64,0.12);
-            --text-primary: #e2eaf5;
-            --text-secondary: #7a90ad;
-            --border: #1a2a40;
-            --border-bright: #263d5c;
+            --text-primary: #f0f4fc;
+            --text-secondary: #7084a8;
+            --border: #1b2a4a;
+            --border-bright: #2d4578;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Noto Sans HK', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Noto Sans HK', sans-serif;
             background-color: var(--bg-deep);
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            -webkit-text-size-adjust: 100%;
             padding: 20px;
             overflow-x: hidden;
         }
 
-        /* ===== ANIMATION EFFECTS ===== */
-        @keyframes shakeImpact {
+        /* ===== SYSTEM IMPACT ANIMATIONS ===== */
+        @keyframes screenShake {
             0% { transform: translate(0, 0); }
-            10% { transform: translate(-4px, 3px) rotate(-1deg); }
-            30% { transform: translate(5px, -2px) rotate(1deg); }
-            50% { transform: translate(-3px, -3px) rotate(-1deg); }
-            70% { transform: translate(4px, 2px) rotate(1deg); }
-            90% { transform: translate(-1px, 1px); }
+            20% { transform: translate(-6px, 4px) rotate(-1deg); }
+            40% { transform: translate(6px, -2px) rotate(1deg); }
+            60% { transform: translate(-4px, -4px) rotate(0deg); }
+            80% { transform: translate(5px, 2px) rotate(1deg); }
             100% { transform: translate(0, 0); }
         }
+        .shake-active { animation: screenShake 0.4s ease-in-out; }
 
-        @keyframes winFlash {
-            0% { background-color: rgba(0, 210, 255, 0.6); box-shadow: 0 0 30px var(--cyan); }
-            100% { background-color: rgba(6, 11, 18, 0.75); }
-        }
-
-        @keyframes particleFly {
+        @keyframes sparkFly {
             0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(0); opacity: 0; }
         }
-
-        .screen-shake {
-            animation: shakeImpact 0.4s ease-in-out;
+        .spark {
+            position: fixed; width: 10px; height: 10px; border-radius: 50%;
+            pointer-events: none; z-index: 9999; box-shadow: 0 0 8px currentColor;
         }
 
-        .flash-winner {
-            animation: winFlash 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
+        /* ===== LAYOUT & STYLING ===== */
+        .header-brand { text-align: center; margin-bottom: 25px; }
+        .header-brand h1 { font-family: 'Orbitron', sans-serif; font-size: 28px; color: var(--cyan); letter-spacing: 2px; text-shadow: 0 0 15px var(--cyan-glow); }
+        .header-brand p { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
 
-        .particle {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-        }
-
-        /* ===== SYSTEM CONFIG / SETUP ===== */
-        .setup-box { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 12px; padding: 18px; margin-bottom: 20px; width: 100%; max-width: 1200px; }
-        .setup-box h3 { font-size: 14px; color: var(--cyan); margin-bottom: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .setup-box { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 12px; padding: 20px; margin: 0 auto 20px auto; max-width: 1200px; }
+        .setup-grid { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        .input-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 12px; color: var(--text-secondary); font-weight: bold; }
         
-        .setup-inputs-wrapper { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-        .input-num-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 120px; }
-        .input-num-field label { font-size: 12px; color: var(--text-secondary); font-weight: bold; }
+        select, input, textarea { background: rgba(0,0,0,0.5); border: 1px solid var(--border-bright); color: #fff; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 14px; width: 100%; }
+        select { color: var(--cyan); font-weight: bold; }
         
-        input[type="number"], textarea, select { background: rgba(0,0,0,0.4); border: 1px solid var(--border-bright); color: var(--text-primary); padding: 11px 12px; border-radius: 8px; font-family: inherit; font-size: 14px; width: 100%; }
-        input[type="number"] { font-weight: bold; text-align: center; color: var(--cyan); }
-        select { color: var(--cyan); font-weight: bold; cursor: pointer; }
+        .stage-banner { text-align: center; margin: 20px 0; }
+        .round-badge { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 900; color: var(--orange); background: var(--orange-glow); padding: 10px 24px; border-radius: 30px; border: 1px solid var(--orange); display: inline-block; }
+
+        .control-btns { display: flex; gap: 10px; justify-content: center; max-width: 1200px; margin: 0 auto 25px auto; }
+        button.action-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--cyan); color: var(--cyan); padding: 14px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        button.action-btn:hover { background: var(--cyan); color: #000; box-shadow: 0 0 15px var(--cyan-glow); }
         
-        .counter-badge { display: inline-block; background: rgba(0,210,255,0.15); color: var(--cyan); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-        .roster-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: bold; }
-
-        /* ===== CONTROL PANEL ===== */
-        .round-indicator { font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 16px; background: rgba(255,107,26,0.08); padding: 8px 18px; border-radius: 24px; border: 1px solid rgba(255,107,26,0.28); display: inline-block; }
-        .btn-container { margin-bottom: 20px; gap: 8px; display: flex; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px; }
+        .main-layout { display: flex; flex-direction: column; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        @media (min-width: 900px) { .main-layout { flex-direction: row; } }
         
-        button { background: rgba(0,0,0,0.28); color: var(--text-primary); border: 1px solid var(--cyan); padding: 12px 16px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; flex: 1; min-width: 140px; }
-        button:hover { background: var(--cyan); color: #000; box-shadow: 0 0 20px rgba(0,210,255,0.4); }
-        .pair-btn { border-color: var(--orange); color: var(--orange); }
-        .pair-btn:hover { background: var(--orange); color: #000; box-shadow: 0 0 20px rgba(255,107,26,0.4); }
-        .share-btn { border-color: var(--gold); color: var(--gold); }
-        .share-btn:hover { background: var(--gold); color: #000; }
+        .panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; flex: 1; }
+        .panel h2 { font-size: 15px; color: var(--cyan); border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .main-container { display: flex; gap: 16px; width: 100%; max-width: 1200px; flex-direction: column; }
-        .panel { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 100%; }
-        .panel h2 { margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--cyan); text-transform: uppercase; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        th, td { padding: 10px 4px; text-align: center; border-bottom: 1px solid var(--border); font-size: 13px; }
-        th { background: rgba(0,210,255,0.05); font-weight: 700; color: var(--text-secondary); }
-
-        .match-list { margin-top: 10px; }
-        .match-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 8px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.015); margin-bottom: 6px; border-radius: 8px; gap: 4px; transition: transform 0.2s ease; }
-        .player-block { width: 38%; text-align: center; font-weight: 700; font-size: 13px; word-break: break-all; padding: 0 2px; }
-        .vs-block { width: 24%; text-align: center; display: flex; flex-direction: column; gap: 4px; align-items: center; flex-shrink: 0; }
-        .champion-row { background-color: rgba(232,184,64,0.1) !important; border: 1px solid rgba(232,184,64,0.28); }
-
-        .win-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,107,26,0.4); color: var(--orange); padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; min-width: 48px; min-height: 34px; -webkit-tap-highlight-color: transparent; transition: all 0.2s; }
-        .win-btn.active { background: var(--orange); color: #000; font-weight: 900; border-color: var(--orange); box-shadow: 0 0 10px rgba(255,107,26,0.5); }
-        .bye-text { color: var(--text-secondary); font-size: 11px; font-style: italic; font-weight: normal; }
-
-        /* ===== TRADITIONAL BRACKET ARCHITECTURE ===== */
-        .tree-section { width: 100%; max-width: 1200px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 16px; }
-        .bracket-super-container { display: flex; flex-direction: column; gap: 40px; margin-top: 15px; }
+        /* ===== MATCH ROW & SCORING MODULE ===== */
+        .match-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+        .match-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 6px; }
         
-        .bracket-sub-title { font-size: 14px; font-weight: 900; letter-spacing: 1px; color: var(--cyan); border-left: 4px solid var(--cyan); padding-left: 8px; margin-bottom: 10px; }
-        .bracket-sub-title.losers-title { color: var(--orange); border-left-color: var(--orange); }
-
-        .tree-container { display: flex; gap: 24px; overflow-x: auto; padding: 20px 10px; position: relative; justify-content: flex-start; }
-        .tree-round { display: flex; flex-direction: column; justify-content: space-around; min-width: 180px; position: relative; }
+        .battle-arena-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .blader-side { flex: 1; text-align: center; }
+        .blader-name { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 4px; word-break: break-all; }
+        .blader-score { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; color: var(--cyan); }
+        .blader-fouls { font-size: 11px; color: #ff3333; margin-top: 20px; font-weight: bold; }
         
-        .tree-round-title { text-align: center; font-size: 11px; font-weight: 900; color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 10px; text-transform: uppercase; }
-        
-        .tree-node-match { display: flex; flex-direction: column; margin: 15px 0; position: relative; width: 100%; transition: all 0.3s ease; }
-        
-        .tree-node-player { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: rgba(6, 11, 18, 0.75); border-bottom: 2px solid var(--border-bright); font-size: 12px; height: 30px; transition: all 0.2s; position: relative; }
-        .tree-node-player span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
-        .tree-node-player.winner { border-bottom-color: var(--cyan); color: var(--cyan); font-weight: 700; }
-        .tree-node-player.loser { opacity: 0.4; }
-        
-        .match-index-tag { font-size: 9px; color: var(--text-secondary); background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; position: absolute; left: -12px; top: calc(50% - 8px); z-index: 5; }
+        .score-controllers { display: flex; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; }
+        .score-controllers button { padding: 4px 8px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 4px; border: 1px solid var(--border-bright); background: transparent; color: var(--text-secondary); }
+        .score-controllers button:hover { color: #fff; background: var(--border-bright); }
 
-        .tree-round:not(:last-child) .tree-node-match::after {
-            content: ""; position: absolute; right: -24px; top: 50%; width: 24px; height: 2px; background: var(--border-bright); z-index: 1;
-        }
+        .vs-center-core { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 140px; }
+        .vs-text { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 14px; color: var(--text-secondary); }
+        
+        /* Official Rule Action Buttons */
+        .rule-trigger-btn { width: 100%; font-size: 11px; font-weight: bold; padding: 6px 4px; background: rgba(0,0,0,0.4); border: 1px solid var(--orange); color: var(--orange); border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+        .rule-trigger-btn:hover { background: var(--orange); color: #fff; }
+        .rule-trigger-btn.xtreme { border-color: var(--cyan); color: var(--cyan); }
+        .rule-trigger-btn.xtreme:hover { background: var(--cyan); color: #000; }
+        .rule-trigger-btn.burst { border-color: var(--gold); color: var(--gold); }
+        .rule-trigger-btn.burst:hover { background: var(--gold); color: #000; }
 
-        .podium-summary-box { background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 8px; padding: 12px; width: 240px; margin-left: auto; display: none; margin-top: 15px; }
-        .podium-summary-box h4 { font-size: 12px; color: var(--gold); margin-bottom: 8px; text-align: center; border-bottom: 1px dashed var(--gold); padding-bottom: 4px; }
-        .podium-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; font-weight: bold; }
+        /* ===== LEADERBOARD ===== */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { background: rgba(0,210,255,0.03); color: var(--text-secondary); font-weight: bold; }
+        .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .status-alive { background: rgba(0,255,100,0.1); color: #00ff64; }
+        .status-dead { background: rgba(255,0,0,0.1); color: #ff3333; }
 
-        body.viewer-mode .admin-only { display: none !important; }
-        body.viewer-mode input, body.viewer-mode textarea, body.viewer-mode select, body.viewer-mode .win-btn { pointer-events: none !important; }
-        .viewer-banner { display: none; width: 100%; background: var(--gold); color: #000; padding: 8px 12px; text-align: center; font-weight: bold; font-size: 12px; z-index: 300; line-height: 1.4; margin-bottom: 15px; }
+        /* ===== BRACKET TREE ===== */
+        .tree-section { max-width: 1200px; margin: 20px auto 0 auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .tree-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 0; }
+        .tree-round { display: flex; flex-direction: column; justify-content: space-around; min-width: 200px; }
+        .tree-round-title { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.4); padding: 6px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .tree-match-node { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 6px; padding: 8px; margin: 10px 0; position: relative; }
+        .tree-node-player { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; border-radius: 4px; margin: 2px 0; }
+        .tree-node-player.winner { color: var(--cyan); font-weight: bold; background: rgba(0,210,255,0.08); }
+        
+        .viewer-banner { display: none; width: 100%; background: var(--gold); color: #000; padding: 8px; text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 15px; }
         body.viewer-mode .viewer-banner { display: block; }
-
-        @media (min-width: 480px) {
-            .match-row { padding: 12px 14px; }
-            .player-block { font-size: 14px; }
-            .win-btn { padding: 6px 12px; min-width: 54px; }
-        }
-        @media (min-width: 780px) {
-            .main-container { flex-direction: row; gap: 18px; }
-            .panel { flex: 1; min-width: 440px; padding: 22px; }
-            .panel h2 { font-size: 14px; padding-bottom: 12px; }
-            th, td { padding: 10px 6px; font-size: 14px; }
-            .tree-section { padding: 24px; }
-        }
+        body.viewer-mode .admin-only, body.viewer-mode button:not(.share-btn) { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="viewer-banner">📢 當前處於「觀眾即時看板」模式 — 賽事進度僅供唯讀瀏覽</div>
+<div class="viewer-banner">📢 唯讀即時看板模式 — 賽事戰報同步中</div>
 
-<div id="page-system" class="page" style="display: block; width: 100%;">
-    
-    <div class="setup-box admin-only" id="admin-setup-area">
-        <h3>賽事規格與選手名單設定</h3>
-        <div class="setup-inputs-wrapper">
-            <div class="input-num-field">
-                <label>賽制模式選擇：</label>
-                <select id="tournament-mode-select" onchange="generateRosterPlaceholders()">
-                    <option value="double">雙敗淘汰制 (Double Elimination)</option>
-                    <option value="single">單敗淘汰制 (Single Elimination)</option>
-                    <option value="swiss">瑞士積分制 (Swiss System)</option>
-                </select>
-            </div>
-            <div class="input-num-field">
-                <label>請輸入參賽人數：</label>
-                <input type="number" id="player-count-input" value="8" min="4" max="64" onchange="generateRosterPlaceholders()">
-            </div>
-            <span class="counter-badge" id="roster-count-badge">目前名單：8 人</span>
+<div class="header-brand">
+    <h1>BEYBLADE X</h1>
+    <p>Tournament Management Console • 官方第6版規則引擎</p>
+</div>
+
+<!-- SETUP PANEL -->
+<div class="setup-box admin-only">
+    <div class="setup-grid">
+        <div class="input-group">
+            <label>賽事項目系統</label>
+            <select id="bracket-mode" onchange="initSetup()">
+                <option value="single">單敗淘汰賽 (Single Elimination)</option>
+                <option value="double">雙敗淘汰賽 (Double Elimination)</option>
+            </select>
         </div>
-        
-        <div style="margin-top: 12px;">
-            <label class="roster-label">選手輸入名單（每行一位，對應傳統對抗圖）：</label>
-            <textarea id="roster-input" rows="8" oninput="updateRosterCount()"></textarea>
+        <div class="input-group">
+            <label>競賽模式組合</label>
+            <select id="match-mode">
+                <option value="regular">標準1對1對戰 (首位抵達4分獲勝)</option>
+                <option value="team3on3">官方 3on3 團隊對抗賽制</option>
+            </select>
         </div>
-    </div>
-
-    <div style="text-align:center;">
-        <div class="round-indicator" id="round-title">當前階段：選手登記</div>
-    </div>
-    
-    <div class="btn-container">
-        <button class="admin-only" style="border-color:#e05555; color:#e05555;" onclick="resetSystem()">重置大賽</button>
-        <button class="pair-btn admin-only" id="action-btn" onclick="nextRound()">鎖定名單並生成第 1 輪對戰</button>
-        <button class="share-btn" onclick="generateShareLink()">🔗 分享看板</button>
-    </div>
-
-    <div class="main-container">
-        <div class="panel">
-            <h2 id="leaderboard-title">選手排行榜</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 20%">排名</th>
-                        <th style="text-align: left; padding-left: 8px;">選手名稱</th>
-                        <th style="width: 35%">狀態 / 比分</th>
-                        <th style="width: 20%" id="leaderboard-extra-th">生命槽</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body"></tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>本輪對戰組合</h2>
-            <div class="match-list" id="match-zone">
-                <p style="color:var(--text-secondary);text-align:center;padding:30px 20px;font-size:13px;">請在上方輸入人數並確認名單，隨後點擊「生成對戰」按鈕！</p>
-            </div>
+        <div class="input-group">
+            <label>參賽人數限制</label>
+            <input type="number" id="player-count" value="8" min="4" max="32" onchange="initSetup()">
         </div>
     </div>
+    <div style="margin-top: 15px;">
+        <label style="font-size: 12px; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 6px;">選手登入名單 (每行一位選手)</label>
+        <textarea id="roster-textarea" rows="6" oninput="parseRosterCount()"></textarea>
+    </div>
+</div>
 
-    <div class="tree-section">
-        <h2 style="font-size:14px; font-weight:700; color:var(--cyan); margin-bottom:12px;">傳統樹狀走向對戰圖 (比照橫向延伸)</h2>
-        
-        <div class="bracket-super-container" id="bracket-root-view">
-            <div id="winners-bracket-block">
-                <div class="bracket-sub-title" id="wb-title">勝部淘汰鏈 (Winners Bracket)</div>
-                <div class="tree-container" id="tree-container-map-winners"></div>
-            </div>
+<div class="stage-banner">
+    <div class="round-badge" id="current-stage-title">當前階段：等待大賽啟動</div>
+</div>
 
-            <div id="losers-bracket-block">
-                <div class="bracket-sub-title losers-title" id="lb-title">敗部復活鏈 (Losers Bracket)</div>
-                <div class="tree-container" id="tree-container-map-losers"></div>
-            </div>
-        </div>
+<div class="control-btns">
+    <button class="action-btn admin-only" style="border-color: #ff3333; color: #ff3333;" onclick="resetConsole()">重置大賽</button>
+    <button class="action-btn admin-only" id="primary-action-btn" onclick="advanceNextRound()">鎖定名單並產生第一輪對決</button>
+    <button class="action-btn share-btn" onclick="copyShareUrl()">🔗 分享同步看板</button>
+</div>
 
-        <div class="podium-summary-box" id="podium-box">
-            <h4>🏆 賽事最終排行 (Final Table)</h4>
-            <div class="podium-row" style="color: var(--gold);"><span>1st (冠軍):</span><span id="p-1st">-</span></div>
-            <div class="podium-row" style="color: #e2eaf5;"><span>2nd (亞軍):</span><span id="p-2nd">-</span></div>
-            <div class="podium-row" style="color: var(--orange);"><span>3rd (季軍):</span><span id="p-3rd">-</span></div>
-            <div class="podium-row" style="color: var(--text-secondary);"><span>4th (殿軍):</span><span id="p-4th">-</span></div>
+<div class="main-layout">
+    <!-- LEADERBOARD -->
+    <div class="panel">
+        <h2>選手生存排行榜</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%">排名</th>
+                    <th style="text-align: left; padding-left: 10px;">Blader 姓名</th>
+                    <th>勝場 - 敗場</th>
+                    <th>目前狀態</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-rows"></tbody>
+        </table>
+    </div>
+
+    <!-- ACTIVE MATCH CONSOLE -->
+    <div class="panel">
+        <h2>本輪對戰裁判控制板 (Match Arena)</h2>
+        <div id="match-arena-zone">
+            <p style="text-align: center; color: var(--text-secondary); padding: 40px 0; font-size: 13px;">大賽尚未啟動，請點擊上方按鈕生成對戰組合。</p>
         </div>
     </div>
 </div>
 
+<!-- GRAPHICAL BRACKET -->
+<div class="tree-section">
+    <h2>傳統賽事對戰走勢圖 (Live Bracket)</h2>
+    <div class="tree-container" id="bracket-tree-visualization"></div>
+</div>
+
 <script>
-    let tournamentMode = 'double'; 
-    let totalRounds = 4;
-    let maxPlayers = 8;
-    let round = 0;
-    let players = [];
-    let matches = [];
-    let roundHistoryLog = [];
+    let currentRound = 0;
+    let maxRounds = 5;
+    let bladers = [];
+    let activeMatches = [];
+    let bracketHistory = [];
+    let matchConfigMode = 'regular';
+    let systemBracketMode = 'single';
 
-    function generateRosterPlaceholders() {
-        tournamentMode = document.getElementById('tournament-mode-select').value;
-        const inputField = document.getElementById('player-count-input');
-        let val = parseInt(inputField.value);
-        if (isNaN(val) || val < 4) val = 4;
-        if (val > 64) val = 64;
-        inputField.value = val;
-        maxPlayers = val;
-        
-        if (tournamentMode === 'swiss') {
-            totalRounds = Math.ceil(Math.log2(maxPlayers));
-            if (maxPlayers <= 4) totalRounds = 2;
-            document.getElementById('leaderboard-title').innerText = "選手排行榜 (同分自動比小分)";
-            document.getElementById('leaderboard-extra-th').innerText = "小分 (BH)";
-            document.getElementById('losers-bracket-block').style.display = 'none';
-            document.getElementById('wb-title').innerText = "瑞士制積分對抗輪次";
-        } else if (tournamentMode === 'single') {
-            totalRounds = Math.ceil(Math.log2(maxPlayers));
-            document.getElementById('leaderboard-title').innerText = "淘汰賽名次表";
-            document.getElementById('leaderboard-extra-th').innerText = "狀態";
-            document.getElementById('losers-bracket-block').style.display = 'none';
-            document.getElementById('wb-title').innerText = "單敗淘汰晉級樹狀圖";
-        } else {
-            totalRounds = (Math.ceil(Math.log2(maxPlayers)) * 2) + 1;
-            document.getElementById('leaderboard-title').innerText = "雙敗淘汰賽生存表";
-            document.getElementById('leaderboard-extra-th').innerText = "生命槽";
-            document.getElementById('losers-bracket-block').style.display = 'block';
-            document.getElementById('wb-title').innerText = "勝部淘汰鏈 (Winners Bracket)";
-        }
+    function initSetup() {
+        systemBracketMode = document.getElementById('bracket-mode').value;
+        const countInput = document.getElementById('player-count');
+        let count = parseInt(countInput.value) || 8;
+        if(count < 4) count = 4;
+        if(count > 32) count = 32;
+        countInput.value = count;
 
-        let currentLines = document.getElementById('roster-input').value.split('\n').map(line => line.trim()).filter(line => line !== "");
-        let generatedNames = [];
-        
-        for (let i = 1; i <= maxPlayers; i++) {
-            if (currentLines[i - 1]) {
-                generatedNames.push(currentLines[i - 1]);
-            } else {
-                generatedNames.push(`選手_${String(i).padStart(2, '0')}`);
-            }
+        let names = [];
+        for(let i=1; i<=count; i++) {
+            names.push(`Blader_${String(i).padStart(2, '0')}`);
         }
-        document.getElementById('roster-input').value = generatedNames.join('\n');
-        updateRosterCount();
-        
-        if (round === 0) {
-            let modeName = tournamentMode === 'swiss' ? '瑞士制' : (tournamentMode === 'single' ? '單敗淘汰' : '雙敗淘汰');
-            document.getElementById('action-btn').innerText = `鎖定名單並生成第 1 輪對戰`;
-            document.getElementById('round-title').innerText = `當前階段：確認規格 (${modeName} / ${maxPlayers}人制)`;
+        document.getElementById('roster-textarea').value = names.join('\n');
+        document.getElementById('current-stage-title').innerText = `規格：${systemBracketMode === 'single'?'單敗淘汰':'雙敗淘汰'} / ${count}人制`;
+    }
+
+    function parseRosterCount() {
+        let lines = document.getElementById('roster-textarea').value.split('\n').map(l => l.trim()).filter(l => l !== "");
+        if (lines.length >= 4 && lines.length <= 32 && currentRound === 0) {
+            document.getElementById('player-count').value = lines.length;
         }
     }
 
-    function updateRosterCount() {
-        let lines = document.getElementById('roster-input').value.split('\n').map(line => line.trim()).filter(line => line !== "");
-        document.getElementById('roster-count-badge').innerText = `目前名單：${lines.length} 人`;
-        if (lines.length >= 4 && lines.length <= 64 && round === 0) {
-            document.getElementById('player-count-input').value = lines.length;
-            maxPlayers = lines.length;
-        }
-    }
-
-    function processInputsIntoPlayers() {
-        let lines = document.getElementById('roster-input').value.split('\n').map(line => line.trim()).filter(line => line !== "");
-        let count = lines.length;
-        if (count < 4) { alert("人數不足！至少需要 4 位選手。"); return false; }
-
-        players = [];
-        for (let i = 0; i < count; i++) {
-            players.push({ 
-                id: i + 1, 
-                name: lines[i], 
-                wins: 0, 
-                losses: 0, 
-                history: [], 
-                buchholz: 0,
-                byeCount: 0,
-                status: 'alive', 
-                bracket: 'winners' 
-            });
-        }
+    function startTournamentEngine() {
+        let lines = document.getElementById('roster-textarea').value.split('\n').map(l => l.trim()).filter(l => l !== "");
+        if(lines.length < 4) { alert("參賽人數不足！"); return false; }
+        
+        bladers = lines.map((name, index) => ({
+            id: index + 1,
+            name: name,
+            wins: 0,
+            losses: 0,
+            status: 'alive',
+            side: 'winners'
+        }));
+        
+        matchConfigMode = document.getElementById('match-mode').value;
+        document.querySelector('.setup-box').style.display = 'none';
         return true;
     }
 
-    function updateBuchholzScores() {
-        players.forEach(p => {
-            p.buchholz = p.history.reduce((sum, oppId) => {
-                if (oppId === "BYE") return sum;
-                let opponent = players.find(o => o.id === oppId);
-                return sum + (opponent ? opponent.wins : 0);
-            }, 0);
-        });
-    }
-
-    function sortLeaderboard() {
-        if (tournamentMode === 'swiss') {
-            players.sort((a, b) => b.wins - a.wins || b.buchholz - a.buchholz);
-        } else {
-            players.sort((a, b) => {
-                if (a.status !== b.status) return a.status === 'alive' ? -1 : 1;
-                if (a.bracket !== b.bracket) return a.bracket === 'winners' ? -1 : 1;
-                return b.wins - a.wins;
-            });
-        }
-    }
-
-    function renderLeaderboard(isFinished = false) {
-        const tbody = document.getElementById('leaderboard-body');
-        tbody.innerHTML = '';
-        if (players.length === 0) return;
+    function executeScoringImpact(matchIdx, winningBladerNum, pointAmount, methodLabel, event) {
+        let match = activeMatches[matchIdx];
         
-        if (tournamentMode === 'swiss') updateBuchholzScores();
-        sortLeaderboard();
+        // Apply regulations point tracking[cite: 4]
+        if (winningBladerNum === 1) {
+            match.p1Points += pointAmount;
+        } else {
+            match.p2Points += pointAmount;
+        }
 
-        players.forEach((p, idx) => {
-            const tr = document.createElement('tr');
-            if (isFinished && idx === 0) tr.className = 'champion-row';
+        // Trigger visual feedback
+        document.body.classList.remove('shake-active');
+        void document.body.offsetWidth; // Reflow reset
+        document.body.classList.add('shake-active');
+
+        // Particle confetti generators at click destination
+        let cx = event ? event.clientX : window.innerWidth / 2;
+        let cy = event ? event.clientY : window.innerHeight / 2;
+        let pColor = (winningBladerNum === 1) ? '#00d2ff' : '#ff5500';
+        
+        for (let i = 0; i < 20; i++) {
+            let spark = document.createElement('div');
+            spark.className = 'spark';
+            spark.style.color = pColor;
+            spark.style.backgroundColor = pColor;
+            spark.style.left = `${cx}px`;
+            spark.style.top = `${cy}px`;
             
-            let extraTd = "";
-            if (tournamentMode === 'swiss') {
-                extraTd = `<td style="color:var(--gold);">${p.buchholz}</td>`;
-            } else if (tournamentMode === 'single') {
-                extraTd = `<td style="font-weight:bold; color:${p.status === 'alive' ? 'var(--cyan)' : 'var(--text-secondary)'}">${p.status === 'alive' ? '存活' : '淘汰'}</td>`;
-            } else {
-                let badgeText = p.status === 'eliminated' ? '☠️ 已淘汰' : (p.bracket === 'winners' ? '🔴🔴 [勝部]' : '🔴 [敗部復活]');
-                let badgeColor = p.status === 'eliminated' ? 'var(--text-secondary)' : (p.bracket === 'winners' ? 'var(--cyan)' : 'var(--orange)');
-                extraTd = `<td style="font-weight:bold; color:${badgeColor}; font-size:12px;">${badgeText}</td>`;
+            let angle = Math.random() * Math.PI * 2;
+            let len = 30 + Math.random() * 80;
+            spark.style.setProperty('--x', `${Math.cos(angle) * len}px`);
+            spark.style.setProperty('--y', `${Math.sin(angle) * len}px`);
+            spark.style.animation = `sparkFly ${0.3 + Math.random()*0.4}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
+            
+            document.body.appendChild(spark);
+            setTimeout(() => spark.remove(), 700);
+        }
+
+        // Regulation Match-point validation check (First to 4 points wins)[cite: 4]
+        const scoreCap = 4;
+        if (match.p1Points >= scoreCap) {
+            match.winner = 1;
+        } else if (match.p2Points >= scoreCap) {
+            match.winner = 2;
+        }
+
+        renderActiveMatches();
+        renderLeaderboardView();
+        buildBracketTreeGraphic();
+    }
+
+    // Official Regulation Fouls Handler[cite: 4]
+    function reportFoulInfraction(matchIdx, bladerNum, event) {
+        let match = activeMatches[matchIdx];
+        if (bladerNum === 1) {
+            match.p1Fouls++;
+            // 2 accumulated fouls awards 1 point to the opponent[cite: 4]
+            if (match.p1Fouls >= 2) {
+                match.p1Fouls = 0;
+                executeScoringImpact(matchIdx, 2, 1, '罰分(2次犯規)', event);
+                return;
+            }
+        } else {
+            match.p2Fouls++;
+            if (match.p2Fouls >= 2) {
+                match.p2Fouls = 0;
+                executeScoringImpact(matchIdx, 1, 1, '罰分(2次犯規)', event);
+                return;
+            }
+        }
+        renderActiveMatches();
+    }
+
+    function advanceNextRound() {
+        if (currentRound === 0) {
+            if (!startTournamentEngine()) return;
+        } else {
+            // Confirm all matches are concluded according to regulations before moving forward[cite: 4]
+            if (activeMatches.some(m => !m.isBye && m.winner === null)) {
+                alert("本輪仍有對抗尚未完結，請先裁定勝負點數！"); return;
             }
 
-            tr.innerHTML = `
-                <td style="font-weight:bold;">${isFinished && idx===0 ? '🏆' : idx + 1}</td>
-                <td style="text-align: left; padding-left:8px; font-weight:500;">${p.name}</td>
-                <td style="font-weight:bold;color:var(--cyan)">${p.wins}勝 - ${p.losses}敗</td>
-                ${extraTd}
-            `;
-            tbody.appendChild(tr);
-        });
-
-        if (isFinished && players.length >= 4) {
-            document.getElementById('podium-box').style.display = 'block';
-            document.getElementById('p-1st').innerText = players[0].name;
-            document.getElementById('p-2nd').innerText = players[1].name;
-            document.getElementById('p-3rd').innerText = players[2].name;
-            document.getElementById('p-4th').innerText = players[3].name;
+            // Commit results to standings
+            activeMatches.forEach(m => {
+                if (m.isBye) {
+                    let p = bladers.find(b => b.id === m.p1.id);
+                    if(p) p.wins++;
+                } else {
+                    let p1 = bladers.find(b => b.id === m.p1.id);
+                    let p2 = bladers.find(b => b.id === m.p2.id);
+                    if (m.winner === 1) {
+                        p1.wins++; p2.losses++;
+                        if (systemBracketMode === 'single') p2.status = 'eliminated';
+                        else {
+                            if(p2.side === 'winners') p2.side = 'losers'; else p2.status = 'eliminated';
+                        }
+                    } else {
+                        p2.wins++; p1.losses++;
+                        if (systemBracketMode === 'single') p1.status = 'eliminated';
+                        else {
+                            if(p1.side === 'winners') p1.side = 'losers'; else p1.status = 'eliminated';
+                        }
+                    }
+                }
+            });
+            bracketHistory.push(JSON.parse(JSON.stringify(activeMatches)));
         }
-    }
 
-    function renderMatches() {
-        const zone = document.getElementById('match-zone');
-        zone.innerHTML = '';
-        if (matches.length === 0) {
-            zone.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:30px 20px;font-size:13px;">當前輪次無安排對抗組合。</p>`;
+        let survivors = bladers.filter(b => b.status === 'alive');
+        if (currentRound > 0 && survivors.length <= 1) {
+            document.getElementById('current-stage-title').innerText = `🏆 大賽完結 - 總冠軍產生！`;
+            activeMatches = [];
+            renderActiveMatches();
+            renderLeaderboardView(true);
             return;
         }
 
-        matches.forEach((m, idx) => {
+        currentRound++;
+        document.getElementById('current-stage-title').innerText = `ROUND ${currentRound} - 實時戰況`;
+        document.getElementById('primary-action-btn').innerText = `確認並生成第 ${currentRound + 1} 輪`;
+
+        generatePairings();
+        renderActiveMatches();
+        renderLeaderboardView();
+        buildBracketTreeGraphic();
+    }
+
+    function generatePairings() {
+        let pool = bladers.filter(b => b.status === 'alive');
+        activeMatches = [];
+
+        if (systemBracketMode === 'single') {
+            for (let i = 0; i < pool.length; i += 2) {
+                if (pool[i + 1]) {
+                    activeMatches.push({ p1: pool[i], p2: pool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false });
+                } else {
+                    activeMatches.push({ p1: pool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true });
+                }
+            }
+        } else {
+            let winPool = pool.filter(b => b.side === 'winners');
+            let losePool = pool.filter(b => b.side === 'losers');
+
+            if (winPool.length === 1 && losePool.length === 1) {
+                activeMatches.push({ p1: winPool[0], p2: losePool[0], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: '總決賽' });
+            } else {
+                for (let i = 0; i < winPool.length; i += 2) {
+                    if (winPool[i + 1]) activeMatches.push({ p1: winPool[i], p2: winPool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: '勝部' });
+                    else activeMatches.push({ p1: winPool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true, tag: '勝部' });
+                }
+                for (let i = 0; i < losePool.length; i += 2) {
+                    if (losePool[i + 1]) activeMatches.push({ p1: losePool[i], p2: losePool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: '敗部復活' });
+                    else activeMatches.push({ p1: losePool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true, tag: '敗部復活' });
+                }
+            }
+        }
+    }
+
+    function renderActiveMatches() {
+        const zone = document.getElementById('match-arena-zone');
+        zone.innerHTML = '';
+
+        if(activeMatches.length === 0) {
+            zone.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: 40px 0; font-size: 13px;">本輪次已無對決或賽事已完結。</p>`;
+            return;
+        }
+
+        activeMatches.forEach((m, idx) => {
             const div = document.createElement('div');
-            div.className = 'match-row';
-            div.id = `match-row-${idx}`;
-            
+            div.className = 'match-card';
+
             if (m.isBye) {
                 div.innerHTML = `
-                    <div class="player-block" style="color:var(--cyan);">${m.p1.name}</div>
-                    <div class="vs-block"><span style="color:var(--gold); font-weight:bold; font-size:11px;">輪空 (BYE)</span></div>
-                    <div class="player-block" style="color:var(--text-secondary); font-style:italic;">-</div>
+                    <div class="match-header"><span>對決組合 #${idx+1}</span> <span style="color:var(--gold);">選手輪空 (BYE)</span></div>
+                    <div class="battle-arena-row">
+                        <div class="blader-side"><div class="blader-name">${m.p1.name}</div></div>
+                        <div class="vs-center-core"><span class="vs-text">直接晉級</span></div>
+                        <div class="blader-side"><div class="blader-name" style="color:var(--text-secondary); font-style:italic;">-</div></div>
+                    </div>
                 `;
             } else {
-                let tagText = m.bracketType === 'winners' ? '勝部' : (m.bracketType === 'losers' ? '敗部' : '總決賽');
+                let tagStr = m.tag || '淘汰賽';
+                let isConcluded = m.winner !== null;
+                
                 div.innerHTML = `
-                    <div class="player-block" id="p1-block-${idx}" style="color:var(--cyan); transition: all 0.3s;">${m.p1.name}</div>
-                    <div class="vs-block">
-                        <span style="color:var(--orange); font-size:11px; font-weight:bold;">${tagText}</span>
-                        <div style="display:flex; gap:6px;">
-                            <button class="win-btn ${m.winner === 1 ? 'active' : ''}" onclick="setWinner(${idx},1,event)">勝</button>
-                            <button class="win-btn ${m.winner === 2 ? 'active' : ''}" onclick="setWinner(${idx},2,event)">勝</button>
+                    <div class="match-header"><span>對決組合 #${idx+1} — [${tagStr}]</span> <span>首位抵達4分獲勝</span></div>
+                    <div class="battle-arena-row">
+                        <!-- Left Blader -->
+                        <div class="blader-side">
+                            <div class="blader-name" style="${m.winner===1?'color:var(--cyan);':(isConcluded?'opacity:0.4;':'')}">${m.p1.name}</div>
+                            <div class="blader-score">${m.p1Points}</div>
+                            <div class="blader-fouls">犯規: ${m.p1Fouls}/2</div>
+                            
+                            <div class="score-controllers admin-only" style="margin-top:10px; ${isConcluded?'display:none;':''}">
+                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 1, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出[cite: 4]</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 2, 'Over Finish', event)">+2 Over 擊出場外[cite: 4]</button>
+                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 1, 2, 'Burst Finish', event)">+2 Burst 爆裂分體[cite: 4]</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 1, 'Spin Finish', event)">+1 Spin 持續旋轉[cite: 4]</button>
+                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 1, event)">⚠️ 違規/早放警告[cite: 4]</button>
+                            </div>
+                        </div>
+
+                        <!-- VS Center Pillar -->
+                        <div class="vs-center-core">
+                            <span class="vs-text" style="${isConcluded?'color:var(--cyan);font-size:18px;':''}">${isConcluded?'MATCH OVER':'VS'}</span>
+                            ${isConcluded? `<span style="font-size:11px;color:var(--text-secondary);">勝者: Blader ${m.winner===1?m.p1.name:m.p2.name}</span>`:''}
+                        </div>
+
+                        <!-- Right Blader -->
+                        <div class="blader-side">
+                            <div class="blader-name" style="${m.winner===2?'color:var(--cyan);':(isConcluded?'opacity:0.4;':'')}">${m.p2.name}</div>
+                            <div class="blader-score">${m.p2Points}</div>
+                            <div class="blader-fouls">犯規: ${m.p2Fouls}/2</div>
+                            
+                            <div class="score-controllers admin-only" style="margin-top:10px; ${isConcluded?'display:none;':''}">
+                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 2, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出[cite: 4]</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 2, 'Over Finish', event)">+2 Over 擊出場外[cite: 4]</button>
+                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 2, 2, 'Burst Finish', event)">+2 Burst 爆裂分體[cite: 4]</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 1, 'Spin Finish', event)">+1 Spin 持續旋轉[cite: 4]</button>
+                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 2, event)">⚠️ 違規/早放警告[cite: 4]</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="player-block" id="p2-block-${idx}" style="color:#e05555; transition: all 0.3s;">${m.p2.name}</div>
                 `;
             }
             zone.appendChild(div);
         });
     }
 
-    // ===== NEW ANIMATION TRIGGER ENGINE =====
-    function triggerImpactEffects(matchIdx, winnerNum, event) {
-        // 1. Screen Shake Effect
-        document.body.classList.remove('screen-shake');
-        void document.body.offsetWidth; // Trigger reflow
-        document.body.classList.add('screen-shake');
-        setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+    function renderLeaderboardView(isEnd = false) {
+        const tbody = document.getElementById('leaderboard-rows');
+        tbody.innerHTML = '';
 
-        // 2. Row Highlight Flash
-        const matchRow = document.getElementById(`match-row-${matchIdx}`);
-        if (matchRow) {
-            matchRow.style.transform = 'scale(1.03)';
-            setTimeout(() => matchRow.style.transform = 'scale(1)', 200);
-        }
-
-        // 3. Dynamic Particle Burst Confetti Explosion
-        const clickX = event.clientX || window.innerWidth / 2;
-        const clickY = event.clientY || window.innerHeight / 2;
-        
-        for (let i = 0; i < 24; i++) {
-            createParticle(clickX, clickY);
-        }
-    }
-
-    function createParticle(x, y) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        
-        // Randomize colors (cyan, gold, orange)
-        const colors = ['#00d2ff', '#e8b840', '#ff6b1a', '#ffffff'];
-        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        p.style.left = `${x}px`;
-        p.style.top = `${y}px`;
-        
-        // Set randomized trajectory variables
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 40 + Math.random() * 80;
-        const destX = Math.cos(angle) * distance;
-        const destY = Math.sin(angle) * distance;
-        
-        p.style.setProperty('--x', `${destX}px`);
-        p.style.setProperty('--y', `${destY}px`);
-        
-        p.style.animation = `particleFly ${0.4 + Math.random() * 0.4}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
-        
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 800);
-    }
-
-    function setWinner(matchIdx, playerNum, event) {
-        matches[matchIdx].winner = playerNum;
-        
-        // Trigger impact animation on interaction
-        triggerImpactEffects(matchIdx, playerNum, event);
-        
-        renderMatches();
-        
-        // Update tree view smoothly
-        buildTreeDiagram();
-        
-        // Flash updated target nodes inside the bracket layout
-        setTimeout(() => {
-            const bracketNodes = document.querySelectorAll('.tree-node-player.winner');
-            bracketNodes.forEach(node => {
-                node.classList.add('flash-winner');
-            });
-        }, 50);
-    }
-
-    function nextRound() {
-        if (round === 0) {
-            if (!processInputsIntoPlayers()) return;
-            document.getElementById('admin-setup-area').style.display = 'none';
-        } else {
-            if (matches.some(m => !m.isBye && m.winner === null)) {
-                alert('請先點擊並完成所有對決的「勝」負標記！'); return;
-            }
-            
-            matches.forEach((m) => {
-                if (m.isBye) {
-                    let p1 = players.find(p => p.id === m.p1.id);
-                    if (p1) { p1.wins++; p1.history.push("BYE"); }
-                } else {
-                    let p1 = players.find(p => p.id === m.p1.id);
-                    let p2 = players.find(p => p.id === m.p2.id);
-                    if(p1 && p2) {
-                        p1.history.push(p2.id); p2.history.push(p1.id);
-                        if (m.winner === 1) { 
-                            p1.wins++; p2.losses++; 
-                            if (tournamentMode === 'single') p2.status = 'eliminated';
-                            else if (tournamentMode === 'double') {
-                                if (p2.bracket === 'winners') p2.bracket = 'losers'; else p2.status = 'eliminated';
-                            }
-                        } else { 
-                            p2.wins++; p1.losses++; 
-                            if (tournamentMode === 'single') p1.status = 'eliminated';
-                            else if (tournamentMode === 'double') {
-                                if (p1.bracket === 'winners') p1.bracket = 'losers'; else p1.status = 'eliminated';
-                            }
-                        }
-                    }
-                }
-            });
-            roundHistoryLog.push(JSON.parse(JSON.stringify(matches)));
-        }
-
-        let alivePlayers = players.filter(p => p.status === 'alive');
-        if (round > 0 && ((tournamentMode === 'swiss' && round >= totalRounds) || (tournamentMode !== 'swiss' && alivePlayers.length <= 1))) {
-            document.getElementById('round-title').innerText = '🔥 大賽完成！樹狀對戰結果如上';
-            renderLeaderboard(true);
-            matches = []; renderMatches(); buildTreeDiagram(); return;
-        }
-
-        round++;
-        let modeName = tournamentMode === 'swiss' ? '瑞士制' : (tournamentMode === 'single' ? '單敗淘汰' : '雙敗淘汰');
-        document.getElementById('round-title').innerText = `當前進度：[${modeName}] 第 ${round} 輪`;
-        
-        matches = calculatePairings();
-        if(matches.length === 0) {
-            document.getElementById('round-title').innerText = '🔥 大賽完成！樹狀對戰結果如上';
-            renderLeaderboard(true); buildTreeDiagram(); return;
-        }
-
-        renderLeaderboard();
-        renderMatches();
-        buildTreeDiagram();
-    }
-
-    function calculatePairings() {
-        let pairs = [];
-        if (tournamentMode === 'swiss') {
-            let pool = players.slice();
-            for(let i=0; i<pool.length; i+=2) {
-                if(pool[i+1]) {
-                    pairs.push({ p1: pool[i], p2: pool[i+1], winner: null, isBye: false, bracketType: 'winners', index: i/2+1 });
-                } else {
-                    pairs.push({ p1: pool[i], p2: null, winner: 1, isBye: true, bracketType: 'winners', index: i/2+1 });
-                }
-            }
-        } else if (tournamentMode === 'single') {
-            let pool = players.filter(p => p.status === 'alive');
-            for(let i=0; i<pool.length; i+=2) {
-                if(pool[i+1]) {
-                    pairs.push({ p1: pool[i], p2: pool[i+1], winner: null, isBye: false, bracketType: 'winners', index: i/2+1 });
-                } else {
-                    pairs.push({ p1: pool[i], p2: null, winner: 1, isBye: true, bracketType: 'winners', index: i/2+1 });
-                }
-            }
-        } else {
-            let wp = players.filter(p => p.status === 'alive' && p.bracket === 'winners');
-            let lp = players.filter(p => p.status === 'alive' && p.bracket === 'losers');
-
-            if (wp.length === 1 && lp.length === 1) {
-                pairs.push({ p1: wp[0], p2: lp[0], winner: null, isBye: false, bracketType: 'grand_final', index: 'GF' });
-            } else {
-                for(let i=0; i<wp.length; i+=2) {
-                    if(wp[i+1]) pairs.push({ p1: wp[i], p2: wp[i+1], winner: null, isBye: false, bracketType: 'winners', index: `W${i/2+1}` });
-                    else pairs.push({ p1: wp[i], p2: null, winner:1, isBye: true, bracketType: 'winners', index: `W${i/2+1}` });
-                }
-                for(let i=0; i<lp.length; i+=2) {
-                    if(lp[i+1]) pairs.push({ p1: lp[i], p2: lp[i+1], winner: null, isBye: false, bracketType: 'losers', index: `L${i/2+1}` });
-                    else pairs.push({ p1: lp[i], p2: null, winner:1, isBye: true, bracketType: 'losers', index: `L${i/2+1}` });
-                }
-            }
-        }
-        return pairs;
-    }
-
-    function buildTreeDiagram() {
-        const wContainer = document.getElementById('tree-container-map-winners');
-        const lContainer = document.getElementById('tree-container-map-losers');
-        wContainer.innerHTML = ''; lContainer.innerHTML = '';
-
-        let drawnRounds = Math.max(round, totalRounds);
-
-        for(let r=1; r<=drawnRounds; r++) {
-            let rMatches = (r === round) ? matches : (roundHistoryLog[r-1] || []);
-            
-            let wbMatches = rMatches.filter(m => m.bracketType === 'winners' || m.bracketType === 'grand_final');
-            if(wbMatches.length > 0 || r <= round) {
-                let col = createBracketColumn(r, wbMatches);
-                wContainer.appendChild(col);
-            }
-
-            let lbMatches = rMatches.filter(m => m.bracketType === 'losers');
-            if(tournamentMode === 'double' && (lbMatches.length > 0 || r <= round)) {
-                let col = createBracketColumn(r, lbMatches);
-                lContainer.appendChild(col);
-            }
-        }
-    }
-
-    function createBracketColumn(roundNum, columnMatches) {
-        const col = document.createElement('div');
-        col.className = 'tree-round';
-        col.innerHTML = `<div class="tree-round-title">ROUND ${roundNum}</div>`;
-
-        if (columnMatches.length === 0) {
-            col.innerHTML += `<div style="text-align:center; opacity:0.2; font-size:11px; margin-top:20px;">-</div>`;
-            return col;
-        }
-
-        columnMatches.forEach(m => {
-            const node = document.createElement('div');
-            node.className = 'tree-node-match';
-            
-            if(m.index) {
-                node.innerHTML += `<div class="match-index-tag">${m.index}</div>`;
-            }
-
-            if (m.isBye) {
-                node.innerHTML += `
-                    <div class="tree-node-player winner"><span>${m.p1.name}</span><span>(BYE)</span></div>
-                    <div class="tree-node-player loser" style="border-bottom-style:dashed;"><span>-</span></div>
-                `;
-            } else {
-                let hasWinner = m.winner !== null;
-                node.innerHTML += `
-                    <div class="tree-node-player ${hasWinner && m.winner === 1 ? 'winner' : (hasWinner ? 'loser' : '')}">
-                        <span>${m.p1.name}</span>
-                    </div>
-                    <div class="tree-node-player ${hasWinner && m.winner === 2 ? 'winner' : (hasWinner ? 'loser' : '')}">
-                        <span>${m.p2.name}</span>
-                    </div>
-                `;
-            }
-            col.appendChild(node);
+        let sorted = [...bladers].sort((a,b) => {
+            if(a.status !== b.status) return a.status === 'alive' ? -1 : 1;
+            return b.wins - a.wins;
         });
-        return col;
+
+        sorted.forEach((b, i) => {
+            const tr = document.createElement('tr');
+            if(isEnd && i === 0) tr.style.background = 'rgba(232,184,64,0.15)';
+            
+            tr.innerHTML = `
+                <td style="font-weight:bold; color:${i===0 && isEnd?'var(--gold)':'inherit'}">${isEnd && i===0?'🏆 冠軍': i+1}</td>
+                <td style="text-align: left; padding-left: 10px; font-weight:bold;">${b.name}</td>
+                <td style="color:var(--cyan); font-weight:bold;">${b.wins} W - ${b.losses} L</td>
+                <td><span class="status-tag ${b.status==='alive'?'status-alive':'status-dead'}">${b.status==='alive'?'競賽中':'已淘汰'}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
-    function generateShareLink() {
-        const state = { r: round, p: players, m: matches, h: roundHistoryLog, tr: totalRounds, mp: maxPlayers, tm: tournamentMode };
-        const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-        const shareUrl = window.location.origin + window.location.pathname + '?data=' + dataStr;
-        navigator.clipboard.writeText(shareUrl).then(() => alert('🚀 看板同步連結已複製！'));
-    }
+    function buildBracketTreeGraphic() {
+        const container = document.getElementById('bracket-tree-visualization');
+        container.innerHTML = '';
+        
+        let displayRounds = Math.max(currentRound, maxRounds);
 
-    function checkViewerMode() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedData = urlParams.get('data');
-        if (encodedData) {
-            try {
-                const state = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
-                round = state.r; players = state.p; matches = state.m; roundHistoryLog = state.h;
-                totalRounds = state.tr; maxPlayers = state.mp; tournamentMode = state.tm;
-                document.body.classList.add('viewer-mode');
-                document.getElementById('admin-setup-area').style.display = 'none';
-                document.getElementById('tournament-mode-select').value = tournamentMode;
-                generateRosterPlaceholders();
-                renderLeaderboard(matches.length === 0 && round > 0);
-                renderMatches(); buildTreeDiagram();
-            } catch(e) { generateRosterPlaceholders(); }
-        } else {
-            generateRosterPlaceholders();
+        for(let r=1; r<=displayRounds; r++) {
+            let rMatches = (r === currentRound) ? activeMatches : (bracketHistory[r-1] || []);
+            if(rMatches.length === 0 && r > currentRound) continue;
+
+            const col = document.createElement('div');
+            col.className = 'tree-round';
+            col.innerHTML = `<div class="tree-round-title">ROUND ${r}</div>`;
+
+            rMatches.forEach(m => {
+                const node = document.createElement('div');
+                col.className = 'tree-round';
+                node.className = 'tree-match-node';
+                
+                if (m.isBye) {
+                    node.innerHTML = `
+                        <div class="tree-node-player winner"><span>${m.p1.name}</span><span>晉級</span></div>
+                        <div class="tree-node-player" style="opacity:0.2;"><span>-</span></div>
+                    `;
+                } else {
+                    node.innerHTML = `
+                        <div class="tree-node-player ${m.winner===1?'winner':''}"><span>${m.p1.name}</span><span>${m.p1Points}</span></div>
+                        <div class="tree-node-player ${m.winner===2?'winner':''}"><span>${m.p2.name}</span><span>${m.p2Points}</span></div>
+                    `;
+                }
+                col.appendChild(node);
+            });
+            container.appendChild(col);
         }
     }
 
-    function resetSystem() { if (confirm('確定重置大賽回到初始登記狀態嗎？')) { window.location.search = ''; location.reload(); } }
-    window.onload = checkViewerMode;
+    function copyShareUrl() {
+        const stateBundle = { r: currentRound, b: bladers, am: activeMatches, h: bracketHistory, m: matchConfigMode, bm: systemBracketMode };
+        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(stateBundle))));
+        const url = window.location.origin + window.location.pathname + '?live=' + base64;
+        navigator.clipboard.writeText(url).then(() => alert("🚀 實時看板連結已成功複製至剪貼簿！"));
+    }
+
+    function loadSharedState() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('live');
+        if(code) {
+            try {
+                const dec = JSON.parse(decodeURIComponent(escape(atob(code))));
+                currentRound = dec.r; bladers = dec.b; activeMatches = dec.am; bracketHistory = dec.h;
+                matchConfigMode = dec.m; systemBracketMode = dec.bm;
+                
+                document.body.classList.add('viewer-mode');
+                document.getElementById('current-stage-title').innerText = `ROUND ${currentRound} - 實時戰況看板`;
+                renderLeaderboardView(activeMatches.length === 0 && currentRound > 0);
+                renderActiveMatches();
+                buildBracketTreeGraphic();
+            } catch(e) { initSetup(); }
+        } else {
+            initSetup();
+        }
+    }
+
+    function resetConsole() { if(confirm("確定清除所有數據重新開始嗎？")) { window.location.search = ''; location.reload(); } }
+    window.onload = loadSharedState;
 </script>
 </body>
 </html>
