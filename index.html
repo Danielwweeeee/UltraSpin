@@ -6,7 +6,7 @@
     <title>BEYBLADE X 官方賽制控制台看板</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght=400;700;900&family=Orbitron:wght=700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #050811;
@@ -69,9 +69,10 @@
         .stage-banner { text-align: center; margin: 20px 0; }
         .round-badge { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 900; color: var(--orange); background: var(--orange-glow); padding: 10px 24px; border-radius: 30px; border: 1px solid var(--orange); display: inline-block; }
 
-        .control-btns { display: flex; gap: 10px; justify-content: center; max-width: 1200px; margin: 0 auto 25px auto; }
+        .control-btns { display: flex; gap: 10px; justify-content: center; max-width: 1200px; margin: 0 auto 25px auto; flex-wrap: wrap; }
         button.action-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--cyan); color: var(--cyan); padding: 14px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
         button.action-btn:hover { background: var(--cyan); color: #000; box-shadow: 0 0 15px var(--cyan-glow); }
+        button.action-btn:disabled { border-color: var(--border); color: var(--text-secondary); cursor: not-allowed; box-shadow: none; background: transparent; }
         
         .main-layout { display: flex; flex-direction: column; gap: 20px; max-width: 1200px; margin: 0 auto; }
         @media (min-width: 900px) { .main-layout { flex-direction: row; } }
@@ -111,16 +112,84 @@
         .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .status-alive { background: rgba(0,255,100,0.1); color: #00ff64; }
         .status-dead { background: rgba(255,0,0,0.1); color: #ff3333; }
+        .status-swiss { background: rgba(0,210,255,0.1); color: var(--cyan); }
 
-        /* ===== BRACKET TREE ===== */
+        /* ===== FIX: FLUID MATRICED BRACKET TREE ===== */
         .tree-section { max-width: 1200px; margin: 20px auto 0 auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .tree-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 0; }
-        .tree-round { display: flex; flex-direction: column; justify-content: space-around; min-width: 200px; }
-        .tree-round-title { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.4); padding: 6px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .tree-match-node { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 6px; padding: 8px; margin: 10px 0; position: relative; }
-        .tree-node-player { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; border-radius: 4px; margin: 2px 0; }
-        .tree-node-player.winner { color: var(--cyan); font-weight: bold; background: rgba(0,210,255,0.08); }
+        .tree-group-title { color: var(--gold); font-size: 14px; font-weight: bold; border-left: 3px solid var(--gold); padding-left: 8px; margin: 15px 0 10px 0; letter-spacing: 1px; }
         
+        .tree-container { display: flex; gap: 30px; overflow-x: auto; padding: 25px 10px; margin-bottom: 15px; border-bottom: 1px dashed var(--border); }
+        .tree-container:last-child { border-bottom: none; }
+        
+        .tree-round { display: flex; flex-direction: column; min-width: 240px; }
+        .tree-round-title { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 11px; color: var(--text-secondary); background: rgba(0,0,0,0.5); padding: 6px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border); letter-spacing: 1px; }
+        
+        /* Flex block structures handling perfect vector scaling paths */
+        .tree-round-matches { display: flex; flex-direction: column; flex-grow: 1; justify-content: space-around; }
+        
+        .tree-match-node { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-bright); 
+            border-radius: 8px; 
+            padding: 10px; 
+            margin: 15px 0; 
+            position: relative; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .tree-node-player { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 8px; border-radius: 4px; margin: 3px 0; background: rgba(0,0,0,0.2); }
+        .tree-node-player.winner { color: var(--cyan); font-weight: bold; background: rgba(0,210,255,0.12); border: 1px solid rgba(0,210,255,0.3); }
+        .tree-node-tag { position: absolute; top: -9px; right: 8px; background: #162442; color: var(--cyan); font-family: 'Orbitron', sans-serif; font-size: 9px; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border-bright); font-weight: bold; }
+
+        /* Perfect Connecting Pipelines */
+        .tree-connected .tree-match-node::before {
+            content: ""; position: absolute; right: -16px; top: 50%; width: 15px; height: 2px; background: var(--border-bright); z-index: 1;
+        }
+        .tree-connected .tree-match-node::after {
+            content: ""; position: absolute; left: -16px; top: 50%; width: 15px; height: 2px; background: var(--border-bright); z-index: 1;
+        }
+        
+        .tree-connected .tree-round:first-of-type .tree-match-node::after { display: none; }
+        .tree-connected .tree-round:last-of-type .tree-match-node::before { display: none; }
+
+        /* Dynamic fluid vertical lines that trace exactly half the relative wrapper block */
+        .tree-connected .tree-round:not(:last-of-type) .tree-match-node:nth-child(even)::before {
+            height: 50%; 
+            border-top: 2px solid var(--border-bright); 
+            border-right: 2px solid var(--border-bright); 
+            border-radius: 0 4px 0 0; 
+            top: 50%;
+            bottom: auto;
+        }
+        .tree-connected .tree-round:not(:last-of-type) .tree-match-node:nth-child(odd)::before {
+            height: 50%; 
+            border-bottom: 2px solid var(--border-bright); 
+            border-right: 2px solid var(--border-bright); 
+            border-radius: 0 0 4px 0; 
+            top: auto;
+            bottom: 50%;
+        }
+        
+        /* Change vertical connection span values relative to flex tree matrices */
+        .tree-connected .tree-round-matches { position: relative; }
+        .tree-connected .tree-round:not(:last-of-type) .tree-match-node::before {
+            width: 16px;
+            right: -16px;
+        }
+        .tree-connected .tree-round:not(:first-of-type) .tree-match-node::after {
+            width: 16px;
+            left: -16px;
+        }
+
+        /* Glowing accents when a node path is actively completed */
+        .tree-connected .tree-match-node.has-winner::before { 
+            border-color: var(--cyan) !important; 
+            background: var(--cyan) !important;
+            box-shadow: 0 0 6px var(--cyan); 
+        }
+
         .viewer-banner { display: none; width: 100%; background: var(--gold); color: #000; padding: 8px; text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 15px; }
         body.viewer-mode .viewer-banner { display: block; }
         body.viewer-mode .admin-only, body.viewer-mode button:not(.share-btn) { display: none !important; }
@@ -139,10 +208,11 @@
 <div class="setup-box admin-only">
     <div class="setup-grid">
         <div class="input-group">
-            <label>賽事項目系統</label>
+            <label>賽事項目系統 (Tournament System)</label>
             <select id="bracket-mode" onchange="initSetup()">
                 <option value="single">單敗淘汰賽 (Single Elimination)</option>
                 <option value="double">雙敗淘汰賽 (Double Elimination)</option>
+                <option value="swiss">積分循環賽 (Swiss System - 不淘汰)</option>
             </select>
         </div>
         <div class="input-group">
@@ -169,6 +239,7 @@
 
 <div class="control-btns">
     <button class="action-btn admin-only" style="border-color: #ff3333; color: #ff3333;" onclick="resetConsole()">重置大賽</button>
+    <button class="action-btn admin-only" id="undo-action-btn" style="border-color: #e8b840; color: #e8b840;" onclick="undoLastAction()" disabled>↩️ 復原上一動作 (Undo)</button>
     <button class="action-btn admin-only" id="primary-action-btn" onclick="advanceNextRound()">鎖定名單並產生第一輪對決</button>
     <button class="action-btn share-btn" onclick="copyShareUrl()">🔗 分享同步看板</button>
 </div>
@@ -176,7 +247,7 @@
 <div class="main-layout">
     <!-- LEADERBOARD -->
     <div class="panel">
-        <h2>選手生存排行榜</h2>
+        <h2>選手大賽排行榜 (Standings)</h2>
         <table>
             <thead>
                 <tr>
@@ -201,8 +272,8 @@
 
 <!-- GRAPHICAL BRACKET -->
 <div class="tree-section">
-    <h2>傳統賽事對戰走勢圖 (Live Bracket)</h2>
-    <div class="tree-container" id="bracket-tree-visualization"></div>
+    <h2>賽事即時對戰圖 (Live Bracket Tree)</h2>
+    <div id="bracket-tree-visualization"></div>
 </div>
 
 <script>
@@ -211,8 +282,10 @@
     let bladers = [];
     let activeMatches = [];
     let bracketHistory = [];
+    let actionHistory = [];
     let matchConfigMode = 'regular';
     let systemBracketMode = 'single';
+    let isBracketResetActive = false;
 
     function initSetup() {
         systemBracketMode = document.getElementById('bracket-mode').value;
@@ -227,7 +300,11 @@
             names.push(`Blader_${String(i).padStart(2, '0')}`);
         }
         document.getElementById('roster-textarea').value = names.join('\n');
-        document.getElementById('current-stage-title').innerText = `規格：${systemBracketMode === 'single'?'單敗淘汰':'雙敗淘汰'} / ${count}人制`;
+        
+        let modeLabel = "單敗淘汰";
+        if(systemBracketMode === 'double') modeLabel = "雙敗淘汰";
+        if(systemBracketMode === 'swiss') modeLabel = "瑞士積分制";
+        document.getElementById('current-stage-title').innerText = `規格：${modeLabel} / ${count}人制`;
     }
 
     function parseRosterCount() {
@@ -247,58 +324,70 @@
             wins: 0,
             losses: 0,
             status: 'alive',
-            side: 'winners'
+            side: 'winners',
+            playedAgainst: []
         }));
         
         matchConfigMode = document.getElementById('match-mode').value;
+        
+        if(systemBracketMode === 'swiss') {
+            maxRounds = Math.ceil(Math.log2(bladers.length));
+        } else {
+            maxRounds = Math.ceil(Math.log2(bladers.length)) + 2;
+        }
+
         document.querySelector('.setup-box').style.display = 'none';
         return true;
     }
 
-    function executeScoringImpact(matchIdx, winningBladerNum, pointAmount, methodLabel, event) {
+    function executeScoringImpact(matchIdx, winningBladerNum, pointAmount, methodLabel, event, isUndoAction = false) {
         let match = activeMatches[matchIdx];
         
-        // Apply regulations point tracking[cite: 4]
+        if (!isUndoAction) {
+            saveActionState('point', matchIdx, winningBladerNum, pointAmount);
+        }
+
         if (winningBladerNum === 1) {
             match.p1Points += pointAmount;
         } else {
             match.p2Points += pointAmount;
         }
 
-        // Trigger visual feedback
-        document.body.classList.remove('shake-active');
-        void document.body.offsetWidth; // Reflow reset
-        document.body.classList.add('shake-active');
+        if (!isUndoAction) {
+            document.body.classList.remove('shake-active');
+            void document.body.offsetWidth;
+            document.body.classList.add('shake-active');
 
-        // Particle confetti generators at click destination
-        let cx = event ? event.clientX : window.innerWidth / 2;
-        let cy = event ? event.clientY : window.innerHeight / 2;
-        let pColor = (winningBladerNum === 1) ? '#00d2ff' : '#ff5500';
-        
-        for (let i = 0; i < 20; i++) {
-            let spark = document.createElement('div');
-            spark.className = 'spark';
-            spark.style.color = pColor;
-            spark.style.backgroundColor = pColor;
-            spark.style.left = `${cx}px`;
-            spark.style.top = `${cy}px`;
+            let cx = event ? event.clientX : window.innerWidth / 2;
+            let cy = event ? event.clientY : window.innerHeight / 2;
+            let pColor = (winningBladerNum === 1) ? '#00d2ff' : '#ff5500';
             
-            let angle = Math.random() * Math.PI * 2;
-            let len = 30 + Math.random() * 80;
-            spark.style.setProperty('--x', `${Math.cos(angle) * len}px`);
-            spark.style.setProperty('--y', `${Math.sin(angle) * len}px`);
-            spark.style.animation = `sparkFly ${0.3 + Math.random()*0.4}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
-            
-            document.body.appendChild(spark);
-            setTimeout(() => spark.remove(), 700);
+            for (let i = 0; i < 20; i++) {
+                let spark = document.createElement('div');
+                spark.className = 'spark';
+                spark.style.color = pColor;
+                spark.style.backgroundColor = pColor;
+                spark.style.left = `${cx}px`;
+                spark.style.top = `${cy}px`;
+                
+                let angle = Math.random() * Math.PI * 2;
+                let len = 30 + Math.random() * 80;
+                spark.style.setProperty('--x', `${Math.cos(angle) * len}px`);
+                spark.style.setProperty('--y', `${Math.sin(angle) * len}px`);
+                spark.style.animation = `sparkFly ${0.3 + Math.random()*0.4}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
+                
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 700);
+            }
         }
 
-        // Regulation Match-point validation check (First to 4 points wins)[cite: 4]
         const scoreCap = 4;
         if (match.p1Points >= scoreCap) {
             match.winner = 1;
         } else if (match.p2Points >= scoreCap) {
             match.winner = 2;
+        } else {
+            match.winner = null;
         }
 
         renderActiveMatches();
@@ -306,21 +395,26 @@
         buildBracketTreeGraphic();
     }
 
-    // Official Regulation Fouls Handler[cite: 4]
-    function reportFoulInfraction(matchIdx, bladerNum, event) {
+    function reportFoulInfraction(matchIdx, bladerNum, event, isUndoAction = false) {
         let match = activeMatches[matchIdx];
+
+        if (!isUndoAction) {
+            saveActionState('foul', matchIdx, bladerNum, 1);
+        }
+
         if (bladerNum === 1) {
-            match.p1Fouls++;
-            // 2 accumulated fouls awards 1 point to the opponent[cite: 4]
-            if (match.p1Fouls >= 2) {
+            match.p1Fouls += isUndoAction ? -1 : 1;
+            if (!isUndoAction && match.p1Fouls >= 2) {
                 match.p1Fouls = 0;
+                actionHistory[actionHistory.length - 1].chainedFoulReset = true;
                 executeScoringImpact(matchIdx, 2, 1, '罰分(2次犯規)', event);
                 return;
             }
         } else {
-            match.p2Fouls++;
-            if (match.p2Fouls >= 2) {
+            match.p2Fouls += isUndoAction ? -1 : 1;
+            if (!isUndoAction && match.p2Fouls >= 2) {
                 match.p2Fouls = 0;
+                actionHistory[actionHistory.length - 1].chainedFoulReset = true;
                 executeScoringImpact(matchIdx, 1, 1, '罰分(2次犯規)', event);
                 return;
             }
@@ -328,33 +422,97 @@
         renderActiveMatches();
     }
 
+    function saveActionState(type, matchIdx, bladerNum, amount) {
+        actionHistory.push({
+            type: type,
+            matchIdx: matchIdx,
+            bladerNum: bladerNum,
+            amount: amount,
+            chainedFoulReset: false
+        });
+        updateUndoButtonUI();
+    }
+
+    function undoLastAction() {
+        if (actionHistory.length === 0) return;
+        
+        let lastAction = actionHistory.pop();
+        let match = activeMatches[lastAction.matchIdx];
+
+        if (lastAction.type === 'point') {
+            executeScoringImpact(lastAction.matchIdx, lastAction.bladerNum, -lastAction.amount, 'Undo', null, true);
+        } else if (lastAction.type === 'foul') {
+            if (lastAction.chainedFoulReset) {
+                let opponentNum = lastAction.bladerNum === 1 ? 2 : 1;
+                executeScoringImpact(lastAction.matchIdx, opponentNum, -1, 'Undo Foul Point', null, true);
+                if (lastAction.bladerNum === 1) match.p1Fouls = 1; else match.p2Fouls = 1;
+            } else {
+                reportFoulInfraction(lastAction.matchIdx, lastAction.bladerNum, null, true);
+            }
+        }
+
+        updateUndoButtonUI();
+        renderActiveMatches();
+        renderLeaderboardView();
+        buildBracketTreeGraphic();
+    }
+
+    function updateUndoButtonUI() {
+        const undoBtn = document.getElementById('undo-action-btn');
+        if (actionHistory.length > 0) {
+            undoBtn.removeAttribute('disabled');
+        } else {
+            undoBtn.setAttribute('disabled', 'true');
+        }
+    }
+
     function advanceNextRound() {
         if (currentRound === 0) {
             if (!startTournamentEngine()) return;
         } else {
-            // Confirm all matches are concluded according to regulations before moving forward[cite: 4]
             if (activeMatches.some(m => !m.isBye && m.winner === null)) {
                 alert("本輪仍有對抗尚未完結，請先裁定勝負點數！"); return;
             }
 
-            // Commit results to standings
-            activeMatches.forEach(m => {
-                if (m.isBye) {
-                    let p = bladers.find(b => b.id === m.p1.id);
-                    if(p) p.wins++;
-                } else {
+            if (systemBracketMode === 'double' && activeMatches.length === 1 && activeMatches[0].tag.includes('總決賽')) {
+                let m = activeMatches[0];
+                if (m.winner === 2 && !isBracketResetActive) {
+                    alert("📢 戰局重組 (Bracket Reset)！敗部勝者擊敗了勝部無敗選手。雙方進入最終終極重賽！");
                     let p1 = bladers.find(b => b.id === m.p1.id);
                     let p2 = bladers.find(b => b.id === m.p2.id);
+                    p1.losses++; p2.wins++;
+                    bracketHistory.push(JSON.parse(JSON.stringify(activeMatches)));
+                    isBracketResetActive = true;
+                    currentRound++;
+                    document.getElementById('current-stage-title').innerText = `ROUND ${currentRound} - 總決賽最終重賽 (Bracket Reset)`;
+                    activeMatches = [{ p1: p1, p2: p2, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: '總決賽 (重賽組)' }];
+                    actionHistory = []; updateUndoButtonUI(); renderActiveMatches(); renderLeaderboardView(); buildBracketTreeGraphic();
+                    return;
+                }
+            }
+
+            activeMatches.forEach(m => {
+                let p1 = bladers.find(b => b.id === m.p1.id);
+                let p2 = m.p2 ? bladers.find(b => b.id === m.p2.id) : null;
+
+                if (m.isBye) {
+                    if(p1) p1.wins++;
+                } else {
+                    if(p1 && p2) {
+                        p1.playedAgainst.push(p2.id);
+                        p2.playedAgainst.push(p1.id);
+                    }
+
                     if (m.winner === 1) {
-                        p1.wins++; p2.losses++;
+                        p1.wins++; if(p2) p2.losses++;
                         if (systemBracketMode === 'single') p2.status = 'eliminated';
-                        else {
+                        else if (systemBracketMode === 'double') {
                             if(p2.side === 'winners') p2.side = 'losers'; else p2.status = 'eliminated';
                         }
                     } else {
-                        p2.wins++; p1.losses++;
+                        if(p2) p2.wins++; p1.losses++;
                         if (systemBracketMode === 'single') p1.status = 'eliminated';
-                        else {
+                        else if (systemBracketMode === 'double') {
                             if(p1.side === 'winners') p1.side = 'losers'; else p1.status = 'eliminated';
                         }
                     }
@@ -363,23 +521,35 @@
             bracketHistory.push(JSON.parse(JSON.stringify(activeMatches)));
         }
 
-        let survivors = bladers.filter(b => b.status === 'alive');
-        if (currentRound > 0 && survivors.length <= 1) {
-            document.getElementById('current-stage-title').innerText = `🏆 大賽完結 - 總冠軍產生！`;
-            activeMatches = [];
-            renderActiveMatches();
-            renderLeaderboardView(true);
-            return;
+        if (systemBracketMode === 'swiss') {
+            if (currentRound >= maxRounds) {
+                document.getElementById('current-stage-title').innerText = `🏆 瑞士制賽事完結 - 終極積分榜揭曉！`;
+                finishTournamentView(); return;
+            }
+        } else {
+            let survivors = bladers.filter(b => b.status === 'alive');
+            if (currentRound > 0 && survivors.length <= 1) {
+                document.getElementById('current-stage-title').innerText = `🏆 大賽完結 - 總冠軍產生！`;
+                finishTournamentView(); return;
+            }
         }
 
         currentRound++;
         document.getElementById('current-stage-title').innerText = `ROUND ${currentRound} - 實時戰況`;
         document.getElementById('primary-action-btn').innerText = `確認並生成第 ${currentRound + 1} 輪`;
 
+        actionHistory = [];
+        updateUndoButtonUI();
         generatePairings();
         renderActiveMatches();
         renderLeaderboardView();
         buildBracketTreeGraphic();
+    }
+
+    function finishTournamentView() {
+        activeMatches = []; actionHistory = [];
+        updateUndoButtonUI(); renderActiveMatches();
+        renderLeaderboardView(true); buildBracketTreeGraphic();
     }
 
     function generatePairings() {
@@ -388,13 +558,11 @@
 
         if (systemBracketMode === 'single') {
             for (let i = 0; i < pool.length; i += 2) {
-                if (pool[i + 1]) {
-                    activeMatches.push({ p1: pool[i], p2: pool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false });
-                } else {
-                    activeMatches.push({ p1: pool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true });
-                }
+                if (pool[i + 1]) activeMatches.push({ p1: pool[i], p2: pool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false });
+                else activeMatches.push({ p1: pool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true });
             }
-        } else {
+        } 
+        else if (systemBracketMode === 'double') {
             let winPool = pool.filter(b => b.side === 'winners');
             let losePool = pool.filter(b => b.side === 'losers');
 
@@ -408,6 +576,43 @@
                 for (let i = 0; i < losePool.length; i += 2) {
                     if (losePool[i + 1]) activeMatches.push({ p1: losePool[i], p2: losePool[i + 1], p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: '敗部復活' });
                     else activeMatches.push({ p1: losePool[i], p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true, tag: '敗部復活' });
+                }
+            }
+        } 
+        else if (systemBracketMode === 'swiss') {
+            let swissPool = [...pool].sort((a, b) => b.wins - a.wins);
+            let pairedIds = new Set();
+
+            for (let i = 0; i < swissPool.length; i++) {
+                let p1 = swissPool[i];
+                if (pairedIds.has(p1.id)) continue;
+
+                let opponentFound = false;
+                for (let j = i + 1; j < swissPool.length; j++) {
+                    let p2 = swissPool[j];
+                    if (pairedIds.has(p2.id)) continue;
+
+                    if (!p1.playedAgainst.includes(p2.id) || currentRound > swissPool.length / 2) {
+                        activeMatches.push({ p1: p1, p2: p2, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: `${p1.wins}勝組` });
+                        pairedIds.add(p1.id); pairedIds.add(p2.id);
+                        opponentFound = true; break;
+                    }
+                }
+
+                if (!opponentFound) {
+                    for (let j = i + 1; j < swissPool.length; j++) {
+                        let p2 = swissPool[j];
+                        if (!pairedIds.has(p2.id)) {
+                            activeMatches.push({ p1: p1, p2: p2, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: null, isBye: false, tag: `${p1.wins}勝組(重對戰)` });
+                            pairedIds.add(p1.id); pairedIds.add(p2.id);
+                            opponentFound = true; break;
+                        }
+                    }
+                }
+
+                if (!opponentFound) {
+                    activeMatches.push({ p1: p1, p2: null, p1Points: 0, p2Points: 0, p1Fouls: 0, p2Fouls: 0, winner: 1, isBye: true, tag: '積分輪空' });
+                    pairedIds.add(p1.id);
                 }
             }
         }
@@ -431,7 +636,7 @@
                     <div class="match-header"><span>對決組合 #${idx+1}</span> <span style="color:var(--gold);">選手輪空 (BYE)</span></div>
                     <div class="battle-arena-row">
                         <div class="blader-side"><div class="blader-name">${m.p1.name}</div></div>
-                        <div class="vs-center-core"><span class="vs-text">直接晉級</span></div>
+                        <div class="vs-center-core"><span class="vs-text">直接晉級 (+1W)</span></div>
                         <div class="blader-side"><div class="blader-name" style="color:var(--text-secondary); font-style:italic;">-</div></div>
                     </div>
                 `;
@@ -442,39 +647,36 @@
                 div.innerHTML = `
                     <div class="match-header"><span>對決組合 #${idx+1} — [${tagStr}]</span> <span>首位抵達4分獲勝</span></div>
                     <div class="battle-arena-row">
-                        <!-- Left Blader -->
                         <div class="blader-side">
                             <div class="blader-name" style="${m.winner===1?'color:var(--cyan);':(isConcluded?'opacity:0.4;':'')}">${m.p1.name}</div>
                             <div class="blader-score">${m.p1Points}</div>
                             <div class="blader-fouls">犯規: ${m.p1Fouls}/2</div>
                             
                             <div class="score-controllers admin-only" style="margin-top:10px; ${isConcluded?'display:none;':''}">
-                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 1, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出[cite: 4]</button>
-                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 2, 'Over Finish', event)">+2 Over 擊出場外[cite: 4]</button>
-                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 1, 2, 'Burst Finish', event)">+2 Burst 爆裂分體[cite: 4]</button>
-                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 1, 'Spin Finish', event)">+1 Spin 持續旋轉[cite: 4]</button>
-                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 1, event)">⚠️ 違規/早放警告[cite: 4]</button>
+                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 1, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 2, 'Over Finish', event)">+2 Over 擊出場外</button>
+                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 1, 2, 'Burst Finish', event)">+2 Burst 爆裂分體</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 1, 1, 'Spin Finish', event)">+1 Spin 持續旋轉</button>
+                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 1, event)">⚠️ 違規/早放警告</button>
                             </div>
                         </div>
 
-                        <!-- VS Center Pillar -->
                         <div class="vs-center-core">
                             <span class="vs-text" style="${isConcluded?'color:var(--cyan);font-size:18px;':''}">${isConcluded?'MATCH OVER':'VS'}</span>
-                            ${isConcluded? `<span style="font-size:11px;color:var(--text-secondary);">勝者: Blader ${m.winner===1?m.p1.name:m.p2.name}</span>`:''}
+                            ${isConcluded? `<span style="font-size:11px;color:var(--text-secondary);">勝者: ${m.winner===1?m.p1.name:m.p2.name}</span>`:''}
                         </div>
 
-                        <!-- Right Blader -->
                         <div class="blader-side">
                             <div class="blader-name" style="${m.winner===2?'color:var(--cyan);':(isConcluded?'opacity:0.4;':'')}">${m.p2.name}</div>
                             <div class="blader-score">${m.p2Points}</div>
                             <div class="blader-fouls">犯規: ${m.p2Fouls}/2</div>
                             
                             <div class="score-controllers admin-only" style="margin-top:10px; ${isConcluded?'display:none;':''}">
-                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 2, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出[cite: 4]</button>
-                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 2, 'Over Finish', event)">+2 Over 擊出場外[cite: 4]</button>
-                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 2, 2, 'Burst Finish', event)">+2 Burst 爆裂分體[cite: 4]</button>
-                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 1, 'Spin Finish', event)">+1 Spin 持續旋轉[cite: 4]</button>
-                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 2, event)">⚠️ 違規/早放警告[cite: 4]</button>
+                                <button class="rule-trigger-btn xtreme" onclick="executeScoringImpact(${idx}, 2, 3, 'Xtreme Finish', event)">+3 Xtreme 齒輪擊出</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 2, 'Over Finish', event)">+2 Over 擊出場外</button>
+                                <button class="rule-trigger-btn burst" onclick="executeScoringImpact(${idx}, 2, 2, 'Burst Finish', event)">+2 Burst 爆裂分體</button>
+                                <button class="rule-trigger-btn" onclick="executeScoringImpact(${idx}, 2, 1, 'Spin Finish', event)">+1 Spin 持續旋轉</button>
+                                <button style="color:#ff3333; margin-top:4px;" onclick="reportFoulInfraction(${idx}, 2, event)">⚠️ 違規/早放警告</button>
                             </div>
                         </div>
                     </div>
@@ -488,20 +690,24 @@
         const tbody = document.getElementById('leaderboard-rows');
         tbody.innerHTML = '';
 
-        let sorted = [...bladers].sort((a,b) => {
-            if(a.status !== b.status) return a.status === 'alive' ? -1 : 1;
-            return b.wins - a.wins;
-        });
+        let sorted = [...bladers].sort((a,b) => b.wins - a.wins || a.losses - b.losses);
 
         sorted.forEach((b, i) => {
             const tr = document.createElement('tr');
             if(isEnd && i === 0) tr.style.background = 'rgba(232,184,64,0.15)';
             
+            let statusTagStr = `<span class="status-tag status-alive">競賽中</span>`;
+            if (systemBracketMode === 'swiss') {
+                statusTagStr = `<span class="status-tag status-swiss">全積分賽制</span>`;
+            } else if (b.status !== 'alive') {
+                statusTagStr = `<span class="status-tag status-dead">已淘汰</span>`;
+            }
+
             tr.innerHTML = `
                 <td style="font-weight:bold; color:${i===0 && isEnd?'var(--gold)':'inherit'}">${isEnd && i===0?'🏆 冠軍': i+1}</td>
                 <td style="text-align: left; padding-left: 10px; font-weight:bold;">${b.name}</td>
                 <td style="color:var(--cyan); font-weight:bold;">${b.wins} W - ${b.losses} L</td>
-                <td><span class="status-tag ${b.status==='alive'?'status-alive':'status-dead'}">${b.status==='alive'?'競賽中':'已淘汰'}</span></td>
+                <td>${statusTagStr}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -513,38 +719,87 @@
         
         let displayRounds = Math.max(currentRound, maxRounds);
 
+        if (systemBracketMode === 'single' || systemBracketMode === 'swiss') {
+            const wrap = document.createElement('div');
+            wrap.className = `tree-container ${systemBracketMode !== 'swiss' ? 'tree-connected' : ''}`;
+            
+            for(let r=1; r<=displayRounds; r++) {
+                let rMatches = (r === currentRound) ? activeMatches : (bracketHistory[r-1] || []);
+                if(rMatches.length === 0 && r > currentRound) continue;
+                wrap.appendChild(createRoundColumn(r, rMatches, systemBracketMode === 'swiss'?'積分賽':''));
+            }
+            container.appendChild(wrap);
+            return;
+        }
+
+        let winnersTreeByRound = {}; let losersTreeByRound = {}; let finalMatches = [];
         for(let r=1; r<=displayRounds; r++) {
             let rMatches = (r === currentRound) ? activeMatches : (bracketHistory[r-1] || []);
-            if(rMatches.length === 0 && r > currentRound) continue;
-
-            const col = document.createElement('div');
-            col.className = 'tree-round';
-            col.innerHTML = `<div class="tree-round-title">ROUND ${r}</div>`;
-
             rMatches.forEach(m => {
-                const node = document.createElement('div');
-                col.className = 'tree-round';
-                node.className = 'tree-match-node';
-                
-                if (m.isBye) {
-                    node.innerHTML = `
-                        <div class="tree-node-player winner"><span>${m.p1.name}</span><span>晉級</span></div>
-                        <div class="tree-node-player" style="opacity:0.2;"><span>-</span></div>
-                    `;
+                let tag = m.tag || '';
+                if (tag.includes('總決賽')) finalMatches.push(m);
+                else if (tag.includes('敗部')) {
+                    if (!losersTreeByRound[r]) losersTreeByRound[r] = [];
+                    losersTreeByRound[r].push(m);
                 } else {
-                    node.innerHTML = `
-                        <div class="tree-node-player ${m.winner===1?'winner':''}"><span>${m.p1.name}</span><span>${m.p1Points}</span></div>
-                        <div class="tree-node-player ${m.winner===2?'winner':''}"><span>${m.p2.name}</span><span>${m.p2Points}</span></div>
-                    `;
+                    if (!winnersTreeByRound[r]) winnersTreeByRound[r] = [];
+                    winnersTreeByRound[r].push(m);
                 }
-                col.appendChild(node);
             });
-            container.appendChild(col);
+        }
+
+        const winTitle = document.createElement('div'); winTitle.className = 'tree-group-title'; winTitle.innerText = '勝部走勢圖 (Winners Bracket)'; container.appendChild(winTitle);
+        const winWrap = document.createElement('div'); winWrap.className = 'tree-container tree-connected';
+        Object.keys(winnersTreeByRound).forEach(r => { winWrap.appendChild(createRoundColumn(r, winnersTreeByRound[r], '勝部')); });
+        container.appendChild(winWrap);
+
+        const loseTitle = document.createElement('div'); loseTitle.className = 'tree-group-title'; loseTitle.innerText = '敗部復活走勢圖 (Losers Bracket)'; container.appendChild(loseTitle);
+        const loseWrap = document.createElement('div'); loseWrap.className = 'tree-container tree-connected';
+        Object.keys(losersTreeByRound).forEach(r => { loseWrap.appendChild(createRoundColumn(r, losersTreeByRound[r], '敗部')); });
+        container.appendChild(loseWrap);
+
+        if (finalMatches.length > 0) {
+            const finalTitle = document.createElement('div'); finalTitle.className = 'tree-group-title'; finalTitle.innerText = '終極總決賽擂台 (Grand Finals)'; container.appendChild(finalTitle);
+            const finalWrap = document.createElement('div'); finalWrap.className = 'tree-container tree-connected';
+            finalWrap.appendChild(createRoundColumn('Finals', finalMatches, '總決賽')); container.appendChild(finalWrap);
         }
     }
 
+    function createRoundColumn(label, matches, groupTag = '') {
+        const col = document.createElement('div');
+        col.className = 'tree-round';
+        col.innerHTML = `<div class="tree-round-title">${isNaN(label) ? label : 'ROUND ' + label}</div>`;
+
+        const matchesWrap = document.createElement('div');
+        matchesWrap.className = 'tree-round-matches';
+
+        matches.forEach(m => {
+            const node = document.createElement('div');
+            node.className = `tree-match-node ${m.winner !== null ? 'has-winner' : ''}`;
+            
+            let displayTag = m.tag ? m.tag : groupTag;
+            if (displayTag) node.innerHTML = `<div class="tree-node-tag">${displayTag}</div>`;
+            
+            if (m.isBye) {
+                node.innerHTML += `
+                    <div class="tree-node-player winner"><span>${m.p1.name}</span><span>晉級</span></div>
+                    <div class="tree-node-player" style="opacity:0.2;"><span>-</span></div>
+                `;
+            } else {
+                node.innerHTML += `
+                    <div class="tree-node-player ${m.winner===1?'winner':''}"><span>${m.p1.name}</span><span>${m.p1Points}</span></div>
+                    <div class="tree-node-player ${m.winner===2?'winner':''}"><span>${m.p2.name}</span><span>${m.p2Points}</span></div>
+                `;
+            }
+            matchesWrap.appendChild(node);
+        });
+        
+        col.appendChild(matchesWrap);
+        return col;
+    }
+
     function copyShareUrl() {
-        const stateBundle = { r: currentRound, b: bladers, am: activeMatches, h: bracketHistory, m: matchConfigMode, bm: systemBracketMode };
+        const stateBundle = { r: currentRound, b: bladers, am: activeMatches, h: bracketHistory, m: matchConfigMode, bm: systemBracketMode, br: isBracketResetActive };
         const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(stateBundle))));
         const url = window.location.origin + window.location.pathname + '?live=' + base64;
         navigator.clipboard.writeText(url).then(() => alert("🚀 實時看板連結已成功複製至剪貼簿！"));
@@ -557,7 +812,7 @@
             try {
                 const dec = JSON.parse(decodeURIComponent(escape(atob(code))));
                 currentRound = dec.r; bladers = dec.b; activeMatches = dec.am; bracketHistory = dec.h;
-                matchConfigMode = dec.m; systemBracketMode = dec.bm;
+                matchConfigMode = dec.m; systemBracketMode = dec.bm; isBracketResetActive = dec.br || false;
                 
                 document.body.classList.add('viewer-mode');
                 document.getElementById('current-stage-title').innerText = `ROUND ${currentRound} - 實時戰況看板`;
